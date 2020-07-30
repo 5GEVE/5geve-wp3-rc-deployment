@@ -1,0 +1,98 @@
+---
+- name: Create /usr/bin/rc directory
+  file:
+    path: /usr/bin/rc
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Check if rtc.service file exists
+  stat:
+    path: /etc/systemd/system/rtc.service 
+  register: rc_service_file
+
+- name: Stop RC service
+  shell: systemctl stop rtc.service
+  when: rc_service_file.stat.exists == true   
+
+- name: Remove rc directory if exists
+  file:
+    path: /tmp/rc
+    state: absent 
+
+- name: Extract rc module
+  unarchive:
+    src: rc.tar.gz
+    dest: /tmp
+
+- name: Create $HOME/5g-eve/github directory
+  file:
+    path: /home/{{ansible_user}}/5g-eve/github
+    state: directory
+    owner: "{{ansible_user}}"
+    group: "{{ansible_user}}"
+    mode: 0755
+
+- name: Remove 5geve-rc directory if exists
+  file:
+    path: /home/{{ansible_user}}/5g-eve/github/5geve-rc
+    state: absent 
+
+- name: Extract 5geve-rc module
+  unarchive:
+    src: 5geve-rc.tar.gz
+    dest: /home/{{ansible_user}}/5g-eve/github
+
+- name: Installation of required packages
+  apt:
+    name: ['openjdk-8-jre', 'openjdk-8-jdk', 'maven']
+    update_cache: yes
+  when: not update_module
+
+- name: Select default locale
+  debconf:
+    name: locales
+    question: locales/default_environment_locale
+    value: en_US.UTF-8
+    vtype: select
+  notify:
+    - Rebuild locales database
+
+- name: Build /etc/locale.gen
+  lineinfile:
+    dest: /etc/locale.gen
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  with_items:
+    - { regexp: '^#? ?de_DE ISO-8859-1', line: 'de_DE ISO-8859-1', state: present }
+    - { regexp: '^#? ?de_DE.UTF-8 UTF-8', line: 'de_DE.UTF-8 UTF-8', state: present }
+    - { regexp: '^#? ?de_DE@euro ISO-8859-15', line: 'de_DE@euro ISO-8859-15', state: present }
+    - { regexp: '^#? ?en_GB ISO-8859-1', line: 'en_GB ISO-8859-1', state: present }
+    - { regexp: '^#? ?en_GB.ISO-8859-15 ISO-8859-15', line: 'en_GB.ISO-8859-15 ISO-8859-15', state: present }
+    - { regexp: '^#? ?en_GB.UTF-8 UTF-8', line: 'en_GB.UTF-8 UTF-8', state: present }
+    - { regexp: '^#? ?en_US ISO-8859-1', line: 'en_US ISO-8859-1', state: present }
+    - { regexp: '^#? ?en_US.ISO-8859-15 ISO-8859-15', line: 'en_US.ISO-8859-15 ISO-8859-15', state: present }
+    - { regexp: '^#? ?en_US.UTF-8 UTF-8', line: 'en_US.UTF-8 UTF-8', state: present }
+  notify:
+    - Rebuild locales database
+    
+- name: Set JAVA_HOME
+  lineinfile:
+    dest: /etc/environment
+    state: present
+    regexp: '^JAVA_HOME'
+    line: 'JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64'
+
+- name: Check if /etc/sudoers file has been modified previously
+  shell: cat /etc/sudoers | grep "{{ansible_user}}" | grep NOPASSWD | wc -w
+  register: etc_sudoers_check
+
+- name: Avoid asking for password with sudo commands
+  shell: echo "{{ansible_user}} ALL=(ALL) NOPASSWD"{{":"}}" ALL" | sudo tee -a /etc/sudoers > /dev/null
+  when: etc_sudoers_check.stdout == "0"
+
+- name: Press enter to continue
+  pause: prompt='Press enter to continue'
+  when: prompt_when_finishes_tasks

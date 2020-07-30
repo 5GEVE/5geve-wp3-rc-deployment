@@ -1,0 +1,2 @@
+[rc]
+#test-ansible-rc ansible_host=10.9.8.122 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root

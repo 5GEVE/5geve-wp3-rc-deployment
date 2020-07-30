@@ -1,0 +1,55 @@
+---
+- name: export LC_ALL
+  shell: export LC_ALL="en_US.UTF-8"
+
+- name: export LC_CTYPE
+  shell: export LC_CTYPE="en_US.UTF-8"
+
+- name: Remove rtc.service file if exists
+  file:
+    path: /etc/systemd/system/rtc.service
+    state: absent 
+
+- name: Change spring.datasource.password parameter in application.properties file
+  lineinfile:
+    path: /tmp/rc/src/main/resources/application.properties
+    regexp: '^spring.datasource.password.*'
+    line: "spring.datasource.password={{eve_db_password}}"
+  when: not turin_installation
+
+- name: Change ansible.user parameter in application.properties file
+  lineinfile:
+    path: /tmp/rc/src/main/resources/application.properties
+    regexp: '^ansible.user.*'
+    line: "ansible.user={{ansible_user}}"
+  when: not turin_installation
+
+- name: Build rc project
+  shell: mvn clean install -DskipTests
+  args:
+    chdir: /tmp/rc
+  when: not turin_installation
+
+- name: Move .jar file to the correct location
+  copy:
+    src: /tmp/rc/target/rc-0.0.1-SNAPSHOT.jar
+    dest: /usr/bin/rc/rc.jar
+    remote_src: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0664
+
+- name: Remove rc directory if exists
+  file:
+    path: /tmp/rc
+    state: absent 
+
+- name: Create start-up service for RC Service
+  script: create_rc_service.sh {{ansible_user}}
+
+- name: Start RC Service
+  shell: systemctl start rtc.service
+
+- name: Press enter to continue
+  pause: prompt='Press enter to continue'
+  when: prompt_when_finishes_tasks

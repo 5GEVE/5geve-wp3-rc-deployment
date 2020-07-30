@@ -1,0 +1,14 @@
+---
+- name: Ansible installation
+  script: install_ansible.sh
+  when: not update_module
+
+- name: Installation of required packages
+  apt:
+    name: ['sshpass']
+    update_cache: yes
+  when: not update_module
+
+- name: Press enter to continue
+  pause: prompt='Press enter to continue'
+  when: prompt_when_finishes_tasks

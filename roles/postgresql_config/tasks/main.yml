@@ -1,0 +1,53 @@
+---
+- name: Install PostgreSQL and related software
+  apt:
+    name: ['postgresql', 'postgresql-contrib', 'python3', 'python3-psycopg2']
+    update_cache: yes
+  when: not update_module
+
+- name: Enable and start PostgreSQL service
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+# In Ericsson server -> createuser --interactive --pwprompt - eve - {{pw}} - n - n - n
+
+- name: Create eve user in PostgreSQL if not created before
+  become_user: postgres
+  postgresql_user:
+    name: eve
+    password: "{{ eve_db_password }}"
+    encrypted: no
+  when: not update_module
+
+- name: Create rc database if not created before
+  become_user: postgres
+  postgresql_db: 
+    name: rc
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+    state: present
+
+- name: Ensure eve user has access to the rc database
+  become_user: postgres
+  postgresql_user: 
+    db: rc
+    name: eve
+    password: "{{ eve_db_password }}"
+    priv: ALL
+    state: present
+
+- name: Provide access to eve user in rc database
+  become_user: postgres
+  postgresql_privs:
+    db: rc
+    role: eve
+    objs: ALL_IN_SCHEMA
+    privs: SELECT,INSERT,UPDATE,DELETE
+
+- name: Press enter to continue
+  pause: prompt='Press enter to continue'
+  when: prompt_when_finishes_tasks

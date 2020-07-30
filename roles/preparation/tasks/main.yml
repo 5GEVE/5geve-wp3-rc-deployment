@@ -26,23 +26,20 @@
     src: rc.tar.gz
     dest: /tmp
 
-- name: Create $HOME/5g-eve/github directory
+- name: Remove 5g-eve directory if exists
   file:
-    path: /home/{{ansible_user}}/5g-eve/github
-    state: directory
-    owner: "{{ansible_user}}"
-    group: "{{ansible_user}}"
-    mode: 0755
+    path: /home/{{ansible_user}}/5g-eve
+    state: absent 
 
 - name: Remove 5geve-rc directory if exists
   file:
-    path: /home/{{ansible_user}}/5g-eve/github/5geve-rc
+    path: /usr/bin/rc/5geve-rc
     state: absent 
 
 - name: Extract 5geve-rc module
   unarchive:
     src: 5geve-rc.tar.gz
-    dest: /home/{{ansible_user}}/5g-eve/github
+    dest: /usr/bin/rc
 
 - name: Installation of required packages
   apt:

@@ -5,3 +5,4 @@ prompt_when_finishes_tasks: true
 eve_db_password: changeme
 update_module: true
 turin_installation: false
+inventory_ip_address: 127.0.0.1

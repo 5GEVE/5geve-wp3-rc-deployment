@@ -42,7 +42,7 @@ In this Ansible project, there are some configuration files that must be complet
 
 * **hosts:** here, you have to include the RC server which will be configured within this Ansible project. The format of each line (PLEASE FOLLOW THIS FORMAT) should be the following: *rc_hostname ansible_host=<RC_IP> ansible_user=<USER> ansible_ssh_pass=<SSH_PASS> ansible_become_pass=<SUDO_PASS>*
 * **group_vars:** includes useful variables for the servers defined in the *hosts* file.
-	* **all:** applies to all servers. Nothing to change here at the beginning. Only if you want to be stopped with each Ansible role execution, set *prompt_when_finishes_tasks* to true, or false otherwise. Other variables that may require a change are *eve_db_password*, setting the password to be used for the eve user in the DB, *update_module*, which specifies if it is an update (true) or an installation from scratch (false), and *turin_installation*, setting it to true if the installation will be in Turin IWL facility.
+	* **all:** applies to all servers. Nothing to change here at the beginning. Only if you want to be stopped with each Ansible role execution, set *prompt_when_finishes_tasks* to true, or false otherwise. Other variables that may require a change are *eve_db_password*, setting the password to be used for the eve user in the DB, *update_module*, which specifies if it is an update (true) or an installation from scratch (false), *turin_installation*, setting it to true if the installation will be in Turin IWL facility, and *inventory_ip_address* is the IP address for the IWF Repository.
 
 ### 5. Download 5geve-rc repository from Github
 
@@ -76,7 +76,7 @@ $ git checkout dev # if exists - if not, use master branch or whatever
 In case the RC is going to be installed in Turin IWL facility, you need to modify, in /tmp/rc/src/main/resources/application.properties, the following variables:
 
 * **spring.datasource.password:** set the value included in *eve_db_password* in **group_vars/all** Ansible file.
-* **ansible.user:** set the value included in *ansible_user* in **hosts** Ansible file.
+* **inventory.ip.address:** set the value included in *inventory_ip_address* in **group_vars/all** Ansible file.
 
 Then, build the project with Maven (so you need Maven installed in your server)
 

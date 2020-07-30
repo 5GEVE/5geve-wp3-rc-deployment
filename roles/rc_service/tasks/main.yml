@@ -17,11 +17,11 @@
     line: "spring.datasource.password={{eve_db_password}}"
   when: not turin_installation
 
-- name: Change ansible.user parameter in application.properties file
+- name: Change inventory.ip.address parameter in application.properties file
   lineinfile:
     path: /tmp/rc/src/main/resources/application.properties
-    regexp: '^ansible.user.*'
-    line: "ansible.user={{ansible_user}}"
+    regexp: '^inventory.ip.address.*'
+    line: "inventory.ip.address={{inventory_ip_address}}"
   when: not turin_installation
 
 - name: Build rc project

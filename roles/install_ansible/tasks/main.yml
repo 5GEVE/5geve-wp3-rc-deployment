@@ -9,6 +9,10 @@
     update_cache: yes
   when: not update_module
 
+- name: Install Windows module
+  shell: ansible-galaxy collection install ansible.windows
+  when: not update_module
+
 - name: Press enter to continue
   pause: prompt='Press enter to continue'
   when: prompt_when_finishes_tasks

@@ -5,4 +5,5 @@ prompt_when_finishes_tasks: true
 eve_db_password: changeme
 update_module: true
 turin_installation: false
-inventory_ip_address: 127.0.0.1
+inventory_ip_address: 127.0.0.1 #10.3.3.30 #172.17.73.101
+msno_ip_address: 127.0.0.1 #10.3.3.30 #172.17.73.101
